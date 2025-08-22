@@ -1,7 +1,7 @@
 use std::io::{self, Write};
 
 fn progress_bar(current: usize, length: usize) -> String {
-    let fill_char = "|";
+    let fill_char = "-";
     let not_filled = " ";
 
     let bar_width = 50;
@@ -11,23 +11,27 @@ fn progress_bar(current: usize, length: usize) -> String {
 
     let mut bar = String::from("[");
 
+    let color = if percentage_done <= 30 {
+        "\x1B[31m"
+    } else if percentage_done <=60 {
+        "\x1B[33m"
+    } else {
+        "\x1B[32m"
+    };
+
     for _ in 1..bar_chars {
-        if percentage_done <= 30 {
-            bar.push_str(format!("\x1B[31m{}\x1B[0m", fill_char).as_str()); // red bar
-        } else if percentage_done <= 60 {
-            bar.push_str(format!("\x1B[33m{}\x1B[0m", fill_char).as_str()); // yellow bar
-        }  else {
-            bar.push_str(format!("\x1B[32m{}\x1B[0m", fill_char).as_str()); // green bar
-        }
+        bar.push_str(color);
+        bar.push_str(fill_char);
         
     }
+
+    bar.push_str("\x1B[0m");
+
     for _ in bar_chars..bar_width {
         bar.push_str(not_filled);
     }
 
-    bar.push_str("]");
-
-    bar.push_str(format!(" {}/{} ({}%)", current, length, percentage_done).as_str());
+    bar.push_str(format!("] {}/{} ({}%)", current, length, percentage_done).as_str());
 
     bar
 
