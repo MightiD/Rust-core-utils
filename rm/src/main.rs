@@ -28,13 +28,13 @@ fn progress_bar(current: usize, length: usize) -> String {
 
 fn main() {
     let range = 10;
-    print!("\x1B[?25l");
+    print!("\x1B[?25l"); //hide cursor so you cant see it jump around all the time
     for i in 0..range {
         let bar = progress_bar(i + 1, range);
         print!("{}\r", bar);
         io::stdout().flush().unwrap();
     }
 
-    print!("\x1B[?25h");
-    println!();
+    print!("\x1B[?25h"); //show cursor again
+    println!(); //newline at the end
 }
