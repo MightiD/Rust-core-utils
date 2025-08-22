@@ -22,16 +22,14 @@ fn progress_bar(current: usize, length: usize) -> String {
     for _ in 1..bar_chars {
         bar.push_str(color);
         bar.push_str(fill_char);
-        
     }
-
-    bar.push_str("\x1B[0m");
 
     for _ in bar_chars..bar_width {
         bar.push_str(not_filled);
     }
 
-    bar.push_str(format!("] {}/{} ({}%)", current, length, percentage_done).as_str());
+    // color to white, adds progress and percentage
+    bar.push_str(format!("\x1B[0m] {}/{} ({}%)", current, length, percentage_done).as_str());
 
     bar
 
