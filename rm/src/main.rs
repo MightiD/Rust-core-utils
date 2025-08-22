@@ -13,11 +13,11 @@ fn progress_bar(current: usize, length: usize) -> String {
 
     for _ in 1..bar_chars {
         if percentage_done <= 30 {
-            bar.push_str(format!("\x1B[31m{}\x1B[0m", fill_char).as_str());
+            bar.push_str(format!("\x1B[31m{}\x1B[0m", fill_char).as_str()); // red bar
         } else if percentage_done <= 60 {
-            bar.push_str(format!("\x1B[33m{}\x1B[0m", fill_char).as_str());
+            bar.push_str(format!("\x1B[33m{}\x1B[0m", fill_char).as_str()); // yellow bar
         }  else {
-            bar.push_str(format!("\x1B[32m{}\x1B[0m", fill_char).as_str());
+            bar.push_str(format!("\x1B[32m{}\x1B[0m", fill_char).as_str()); // green bar
         }
         
     }
@@ -34,7 +34,7 @@ fn progress_bar(current: usize, length: usize) -> String {
 }
 
 fn main() {
-    let range = 1000000;
+    let range = 100000;
     print!("\x1B[?25l"); //hide cursor so you cant see it jump around all the time
     for i in 0..range {
         let bar = progress_bar(i + 1, range);
