@@ -107,7 +107,6 @@ fn main() {
             Ok(meta) => {
                 if meta.is_file() || meta.is_symlink() {
                     // let _ = fs::remove_file(item);
-                    println!("File")
                 } else if meta.is_dir() {
                     items = get_total_items(item, args.recursive);
                 }
@@ -117,8 +116,6 @@ fn main() {
                 process::exit(1);
             }
         }
-
-        println!("{}", items);
 
         // print!("\x1B[?25l");
         // let bar = progress_bar(i + 1, args.len() - 1);
