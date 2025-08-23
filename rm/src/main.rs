@@ -96,6 +96,7 @@ fn main() {
             Ok(meta) => {
                 if meta.is_file() || meta.is_symlink() {
                     let item_path = PathBuf::from(item);
+                    dbg!(&item_path);
                     paths.push(item_path);
                 }
                 else if meta.is_dir() {
@@ -103,11 +104,8 @@ fn main() {
                     if args.recursive {
                         get_total_items(item, args.recursive, &mut paths);
                     }
-                    //if not, increment for the dir
-                    else {
-                        let item_path = PathBuf::from(item);
-                        paths.push(item_path);
-                    }
+                    let item_path = PathBuf::from(item);
+                    paths.push(item_path);
                 }
             }
             Err(_) => {
@@ -120,8 +118,6 @@ fn main() {
     //sort and reverse so deletes all items in dir before dir
     paths.sort();
     paths.reverse();
-
-    dbg!(&paths);
     
     print!("\x1B[?25l"); // dont show cursor
     
