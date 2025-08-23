@@ -1,4 +1,5 @@
 use std::fs;
+use std::path::PathBuf;
 use std::process;
 
 use clap::Parser;
@@ -47,7 +48,7 @@ fn progress_bar(current: usize, length: usize) -> String {
 
 }
 
-fn get_total_items(path: &str, search_sub_dirs: bool) -> usize {
+fn get_total_items(path: &str, search_sub_dirs: bool, path_array: &mut Vec<PathBuf>) -> usize {
     let mut items = 0;
 
     if let Ok(entries) = fs::read_dir(path) {
@@ -59,7 +60,7 @@ fn get_total_items(path: &str, search_sub_dirs: bool) -> usize {
                         if search_sub_dirs {
                             let tmp = match entry.path().to_str() {
                                 Some(path) => {
-                                    get_total_items(path, true)
+                                    get_total_items(path, true, path_array)
                                 }
                                 None => {
                                     eprintln!("There was an error converting a dir into a string");
@@ -69,11 +70,13 @@ fn get_total_items(path: &str, search_sub_dirs: bool) -> usize {
                             items += tmp;
                         }
                         else {
+                            path_array.push(entry.path());
                             items += 1;
                         }
                         
                     }
                     else {
+                        path_array.push(entry.path());
                         items += 1;
                     }
                 }
@@ -93,6 +96,8 @@ fn main() {
 
     let mut items = 0;
 
+    let mut paths: Vec<PathBuf> = Vec::new();
+
     if args.paths.len() < 1 {
         println!("rm: missing operand\nTry 'rm --help' for more information.");
         process::exit(1);
@@ -100,15 +105,18 @@ fn main() {
 
     // this loop is to get the number of items we're dealing with for the progress bar
     for (_, item) in args.paths.iter().enumerate() {
-
         match fs::metadata(item) {
             Ok(meta) => {
                 if meta.is_file() || meta.is_symlink() {
                     items += 1;
+                    let item_path = PathBuf::from(item);
+                    paths.push(item_path);
+                    items += 1;
+
                 } else if meta.is_dir() {
                     //if -r, go over all sub paths
                     if args.recursive {
-                        items += get_total_items(item, args.recursive);
+                        items += get_total_items(item, args.recursive, &mut paths);
                     }
                     //if not, increment for the dir
                     else {
@@ -121,6 +129,10 @@ fn main() {
                 process::exit(1);
             }
         }
+
+        dbg!(&paths);
+        dbg!(&paths.len());
+        println!("{}", items);
 
         // print!("\x1B[?25l");
         // let bar = progress_bar(i + 1, args.len() - 1);
