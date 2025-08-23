@@ -104,14 +104,13 @@ fn main() {
     }
 
     // this loop is to get the number of items we're dealing with for the progress bar
-    for (_, item) in args.paths.iter().enumerate() {
+    for item in args.paths.iter() {
         match fs::metadata(item) {
             Ok(meta) => {
                 if meta.is_file() || meta.is_symlink() {
                     items += 1;
                     let item_path = PathBuf::from(item);
                     paths.push(item_path);
-                    items += 1;
 
                 } else if meta.is_dir() {
                     //if -r, go over all sub paths
@@ -120,6 +119,8 @@ fn main() {
                     }
                     //if not, increment for the dir
                     else {
+                        let item_path = PathBuf::from(item);
+                        paths.push(item_path);
                         items += 1;
                     }
                 }
