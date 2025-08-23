@@ -38,6 +38,27 @@ fn progress_bar(current: usize, length: usize) -> String {
 
 }
 
+fn get_total_items(path: &str) -> usize {
+    let mut items = 0;
+
+    if let Ok(entries) = fs::read_dir(path) {
+        for entry in entries {
+            match entry {
+                Ok(entry) => {
+                    dbg!(entry.file_name());
+                    items += 1;
+                }
+                Err(_) => {
+                    eprintln!("There was an error");
+                    process::exit(1);
+                }
+            }
+        }
+    }
+
+    items
+}
+
 fn main() {
     let args: Vec<String> = args().collect();
 
@@ -47,27 +68,31 @@ fn main() {
     }
 
     for (i, item) in args[1..].iter().enumerate() {
+
+        let mut items = 0;
+
         match fs::metadata(item) {
             Ok(meta) => {
                 if meta.is_file() || meta.is_symlink() {
-                    let _ = fs::remove_file(item);
+                    // let _ = fs::remove_file(item);
+                    println!("File")
                 } else if meta.is_dir() {
-                    let _ = fs::remove_dir(item);
+                    items = get_total_items(item);
                 }
             }
-            Err(e) => {
+            Err(_) => {
                 println!("rm: cannot access '{}': No such file or directory", item);
                 process::exit(1);
             }
         }
+
+        println!("{}", items);
+
+        // print!("\x1B[?25l");
+        // let bar = progress_bar(i + 1, args.len() - 1);
+        // print!("{}\r", bar);
+        // io::stdout().flush().unwrap();
     }
 
-    // let range = 100000;
-    // print!("\x1B[?25l"); //hide cursor so you cant see it jump around all the time
-    // for i in 0..range {
-    //     let bar = progress_bar(i + 1, range);
-    //     print!("{}\r", bar);
-    //     io::stdout().flush().unwrap();
-    // }
-    // print!("\x1B[?25h\n"); //show cursor again and new line
+    print!("\x1B[?25h\n");
 }
