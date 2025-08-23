@@ -10,6 +10,9 @@ struct Cli {
     #[arg(short = 'r')]
     recursive: bool,
 
+    #[arg(short = 'p')]
+    progress: bool,
+
     #[arg()]
     paths: Vec<String>,
 }
@@ -130,15 +133,17 @@ fn main() {
             if !args.recursive {
                 eprintln!("rm: cannot remove '{}': Is a directory", item.to_string_lossy());
             } else {
-                if let Err(e) = fs::remove_dir(item) {
+                if let Err(_) = fs::remove_dir(item) {
                     eprintln!("Error removing file: {}", item.to_string_lossy());
                 }
             }
         }
 
-        let bar = progress_bar(i + 1, paths.len());
-        print!("{}\r", bar);
-        io::stdout().flush().unwrap();
+        if args.progress {
+            let bar = progress_bar(i + 1, paths.len());
+            print!("{}\r", bar);
+            io::stdout().flush().unwrap();
+        }
     }
 
     print!("\x1B[?25h\n"); //show cursor again
