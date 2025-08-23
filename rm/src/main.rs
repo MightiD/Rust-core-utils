@@ -53,7 +53,5 @@ fn main() {
         print!("{}\r", bar);
         io::stdout().flush().unwrap();
     }
-
-    print!("\x1B[?25h"); //show cursor again
-    println!(); //newline at the end
+    print!("\x1B[?25h\n"); //show cursor again and new line
 }
