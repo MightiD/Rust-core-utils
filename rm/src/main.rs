@@ -65,9 +65,7 @@ fn get_total_items(path: &str, search_sub_dirs: bool, path_array: &mut Vec<PathB
                                 }
                             };
                         }
-                        else {
-                            path_array.push(entry.path());
-                        }
+                        path_array.push(entry.path());
                     }
                     else {
                         path_array.push(entry.path());
@@ -99,8 +97,8 @@ fn main() {
                 if meta.is_file() || meta.is_symlink() {
                     let item_path = PathBuf::from(item);
                     paths.push(item_path);
-
-                } else if meta.is_dir() {
+                }
+                else if meta.is_dir() {
                     //if -r, go over all sub paths
                     if args.recursive {
                         get_total_items(item, args.recursive, &mut paths);
@@ -119,6 +117,12 @@ fn main() {
         }
     }
 
+    //sort and reverse so deletes all items in dir before dir
+    paths.sort();
+    paths.reverse();
+
+    dbg!(&paths);
+    
     print!("\x1B[?25l"); // dont show cursor
     
     for (i, item) in paths.iter().enumerate() {
