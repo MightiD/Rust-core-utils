@@ -1,6 +1,7 @@
 use std::fs;
 use std::path::PathBuf;
 use std::process;
+use std::io::{self, Write};
 
 use clap::Parser;
 
@@ -116,15 +117,29 @@ fn main() {
                 process::exit(1);
             }
         }
-
-        dbg!(&paths);
-        dbg!(&paths.len());
-
-        // print!("\x1B[?25l");
-        // let bar = progress_bar(i + 1, args.len() - 1);
-        // print!("{}\r", bar);
-        // io::stdout().flush().unwrap();
     }
 
-    print!("\x1B[?25h\n");
+    print!("\x1B[?25l"); // dont show cursor
+    
+    for (i, item) in paths.iter().enumerate() {
+        if item.is_file() || item.is_symlink() {
+            if let Err(e) = fs::remove_file(item) {
+                eprintln!("Error removing file: {}", item.to_string_lossy());
+            }
+        } else if item.is_dir() {
+            if !args.recursive {
+                eprintln!("rm: cannot remove '{}': Is a directory", item.to_string_lossy());
+            } else {
+                if let Err(e) = fs::remove_dir(item) {
+                    eprintln!("Error removing file: {}", item.to_string_lossy());
+                }
+            }
+        }
+
+        let bar = progress_bar(i + 1, paths.len());
+        print!("{}\r", bar);
+        io::stdout().flush().unwrap();
+    }
+
+    print!("\x1B[?25h\n"); //show cursor again
 }
