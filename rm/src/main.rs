@@ -48,36 +48,28 @@ fn progress_bar(current: usize, length: usize) -> String {
 
 }
 
-fn get_total_items(path: &str, search_sub_dirs: bool, path_array: &mut Vec<PathBuf>) -> usize {
-    let mut items = 0;
-
+fn get_total_items(path: &str, search_sub_dirs: bool, path_array: &mut Vec<PathBuf>) {
     if let Ok(entries) = fs::read_dir(path) {
         for entry in entries {
             match entry {
                 Ok(entry) => {
-
                     if entry.path().is_dir() {
                         if search_sub_dirs {
-                            let tmp = match entry.path().to_str() {
+                            match entry.path().to_str() {
                                 Some(path) => {
                                     get_total_items(path, true, path_array)
                                 }
                                 None => {
                                     eprintln!("There was an error converting a dir into a string");
-                                    0
                                 }
                             };
-                            items += tmp;
                         }
                         else {
                             path_array.push(entry.path());
-                            items += 1;
                         }
-                        
                     }
                     else {
                         path_array.push(entry.path());
-                        items += 1;
                     }
                 }
                 Err(_) => {
@@ -87,14 +79,10 @@ fn get_total_items(path: &str, search_sub_dirs: bool, path_array: &mut Vec<PathB
             }
         }
     }
-
-    items
 }
 
 fn main() {
     let args = Cli::parse();
-
-    let mut items = 0;
 
     let mut paths: Vec<PathBuf> = Vec::new();
 
@@ -108,20 +96,18 @@ fn main() {
         match fs::metadata(item) {
             Ok(meta) => {
                 if meta.is_file() || meta.is_symlink() {
-                    items += 1;
                     let item_path = PathBuf::from(item);
                     paths.push(item_path);
 
                 } else if meta.is_dir() {
                     //if -r, go over all sub paths
                     if args.recursive {
-                        items += get_total_items(item, args.recursive, &mut paths);
+                        get_total_items(item, args.recursive, &mut paths);
                     }
                     //if not, increment for the dir
                     else {
                         let item_path = PathBuf::from(item);
                         paths.push(item_path);
-                        items += 1;
                     }
                 }
             }
@@ -133,7 +119,6 @@ fn main() {
 
         dbg!(&paths);
         dbg!(&paths.len());
-        println!("{}", items);
 
         // print!("\x1B[?25l");
         // let bar = progress_bar(i + 1, args.len() - 1);
