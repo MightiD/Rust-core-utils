@@ -46,12 +46,28 @@ fn main() {
         process::exit(1);
     }
 
-    let range = 100000;
-    print!("\x1B[?25l"); //hide cursor so you cant see it jump around all the time
-    for i in 0..range {
-        let bar = progress_bar(i + 1, range);
-        print!("{}\r", bar);
-        io::stdout().flush().unwrap();
+    for (i, item) in args[1..].iter().enumerate() {
+        match fs::metadata(item) {
+            Ok(meta) => {
+                if meta.is_file() || meta.is_symlink() {
+                    let _ = fs::remove_file(item);
+                } else if meta.is_dir() {
+                    let _ = fs::remove_dir(item);
+                }
+            }
+            Err(e) => {
+                println!("rm: cannot access '{}': No such file or directory", item);
+                process::exit(1);
+            }
+        }
     }
-    print!("\x1B[?25h\n"); //show cursor again and new line
+
+    // let range = 100000;
+    // print!("\x1B[?25l"); //hide cursor so you cant see it jump around all the time
+    // for i in 0..range {
+    //     let bar = progress_bar(i + 1, range);
+    //     print!("{}\r", bar);
+    //     io::stdout().flush().unwrap();
+    // }
+    // print!("\x1B[?25h\n"); //show cursor again and new line
 }
