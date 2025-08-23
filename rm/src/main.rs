@@ -49,7 +49,6 @@ fn progress_bar(current: usize, length: usize) -> String {
 
 }
 
-
 fn get_total_items(path: &str, search_sub_dirs: bool) -> usize {
     let mut items = 0;
 
@@ -94,21 +93,29 @@ fn get_total_items(path: &str, search_sub_dirs: bool) -> usize {
 fn main() {
     let args = Cli::parse();
 
+    let mut items = 0;
+
     if args.paths.len() < 1 {
         println!("rm: missing operand\nTry 'rm --help' for more information.");
         process::exit(1);
     }
 
-    for (i, item) in args.paths.iter().enumerate() {
-
-        let mut items = 0;
+    // this loop is to get the number of items we're dealing with for the progress bar
+    for (_, item) in args.paths.iter().enumerate() {
 
         match fs::metadata(item) {
             Ok(meta) => {
                 if meta.is_file() || meta.is_symlink() {
-                    // let _ = fs::remove_file(item);
+                    items += 1;
                 } else if meta.is_dir() {
-                    items = get_total_items(item, args.recursive);
+                    //if -r, go over all sub paths
+                    if args.recursive {
+                        items += get_total_items(item, args.recursive);
+                    }
+                    //if not, return
+                    else {
+                        items += 1;
+                    }
                 }
             }
             Err(_) => {
