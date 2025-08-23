@@ -45,8 +45,24 @@ fn get_total_items(path: &str) -> usize {
         for entry in entries {
             match entry {
                 Ok(entry) => {
-                    dbg!(entry.file_name());
-                    items += 1;
+
+                    if entry.path().is_dir() {
+                        let tmp = match entry.path().to_str() {
+                            Some(path) => {
+                                println!("{}", path);
+                                get_total_items(path)
+                            }
+                            None => {
+                                eprintln!("There was an error converting a dir into a string");
+                                0
+                            }
+                        };
+
+                        items += tmp;
+                    }
+                    else {
+                        items += 1;
+                    }
                 }
                 Err(_) => {
                     eprintln!("There was an error");
