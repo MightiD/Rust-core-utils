@@ -1,4 +1,7 @@
 use std::io::{self, Write};
+use std::fs;
+use std::process;
+use std::env::args;
 
 fn progress_bar(current: usize, length: usize) -> String {
     let fill_char = "-";
@@ -36,6 +39,13 @@ fn progress_bar(current: usize, length: usize) -> String {
 }
 
 fn main() {
+    let args: Vec<String> = args().collect();
+
+    if args.len() < 2 {
+        println!("rm: missing operand\nTry 'rm --help' for more information.");
+        process::exit(1);
+    }
+
     let range = 100000;
     print!("\x1B[?25l"); //hide cursor so you cant see it jump around all the time
     for i in 0..range {
