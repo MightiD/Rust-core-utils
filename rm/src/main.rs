@@ -8,7 +8,7 @@ use clap::Parser;
 #[derive(Parser, Debug)]
 struct Cli {
     #[arg(short = 'r')]
-    r: bool,
+    recursive: bool,
 
     #[arg()]
     paths: Vec<String>,
@@ -49,7 +49,8 @@ fn progress_bar(current: usize, length: usize) -> String {
 
 }
 
-fn get_total_items(path: &str) -> usize {
+
+fn get_total_items(path: &str, search_sub_dirs: bool) -> usize {
     let mut items = 0;
 
     if let Ok(entries) = fs::read_dir(path) {
@@ -58,18 +59,22 @@ fn get_total_items(path: &str) -> usize {
                 Ok(entry) => {
 
                     if entry.path().is_dir() {
-                        let tmp = match entry.path().to_str() {
-                            Some(path) => {
-                                println!("{}", path);
-                                get_total_items(path)
-                            }
-                            None => {
-                                eprintln!("There was an error converting a dir into a string");
-                                0
-                            }
-                        };
-
-                        items += tmp;
+                        if search_sub_dirs {
+                            let tmp = match entry.path().to_str() {
+                                Some(path) => {
+                                    get_total_items(path, true)
+                                }
+                                None => {
+                                    eprintln!("There was an error converting a dir into a string");
+                                    0
+                                }
+                            };
+                            items += tmp;
+                        }
+                        else {
+                            items += 1;
+                        }
+                        
                     }
                     else {
                         items += 1;
@@ -104,7 +109,7 @@ fn main() {
                     // let _ = fs::remove_file(item);
                     println!("File")
                 } else if meta.is_dir() {
-                    items = get_total_items(item);
+                    items = get_total_items(item, args.recursive);
                 }
             }
             Err(_) => {
