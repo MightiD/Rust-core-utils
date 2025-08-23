@@ -1,7 +1,6 @@
 use std::io::{self, Write};
 use std::fs;
 use std::process;
-use std::env::args;
 
 use clap::Parser;
 
