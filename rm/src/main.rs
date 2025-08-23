@@ -3,6 +3,17 @@ use std::fs;
 use std::process;
 use std::env::args;
 
+use clap::Parser;
+
+#[derive(Parser, Debug)]
+struct Cli {
+    #[arg(short = 'r')]
+    r: bool,
+
+    #[arg()]
+    paths: Vec<String>,
+}
+
 fn progress_bar(current: usize, length: usize) -> String {
     let fill_char = "-";
     let not_filled = " ";
@@ -76,14 +87,14 @@ fn get_total_items(path: &str) -> usize {
 }
 
 fn main() {
-    let args: Vec<String> = args().collect();
+    let args = Cli::parse();
 
-    if args.len() < 2 {
+    if args.paths.len() < 1 {
         println!("rm: missing operand\nTry 'rm --help' for more information.");
         process::exit(1);
     }
 
-    for (i, item) in args[1..].iter().enumerate() {
+    for (i, item) in args.paths.iter().enumerate() {
 
         let mut items = 0;
 
