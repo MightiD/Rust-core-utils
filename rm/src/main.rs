@@ -110,7 +110,7 @@ fn main() {
                     if args.recursive {
                         items += get_total_items(item, args.recursive);
                     }
-                    //if not, return
+                    //if not, increment for the dir
                     else {
                         items += 1;
                     }
