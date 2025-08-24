@@ -16,6 +16,9 @@ struct Cli {
     #[arg(short = 'f')]
     force: bool,
 
+    #[arg(short = 'z')]
+    are_you_sure: bool,
+
     #[arg()]
     paths: Vec<String>,
 }
@@ -142,6 +145,30 @@ fn main() {
     let args = Cli::parse();
 
     let mut paths: Vec<PathBuf> = Vec::new();
+
+
+    let messages: Vec<String> = vec![
+        String::from("Are you sure you want to delete these files? "),
+        String::from("But are you really sure you want to? "),
+        String::from("But think of how the files would feel? "),
+        String::from("Youre a murderer if you delete these files "),
+        String::from("How can you sleep at night knowing you delete innocent files who did nothing to you ")
+    ];
+
+    if args.are_you_sure {
+        for (i, message) in messages.iter().enumerate() {
+            let response = input(message.to_string());
+            if response == "y" || response == "yes" {
+                if i == messages.len() - 1 {
+                    println!("Fine, you got what you wanted you murderer");
+                }
+                continue;
+            } else {
+                println!("Youre a good person, you saved lives of innocent files today!");
+                process::exit(0);
+            }
+        }
+    }
 
     if args.paths.len() < 1 {
         println!("rm: missing operand\nTry 'rm --help' for more information.");
