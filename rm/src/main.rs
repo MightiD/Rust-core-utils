@@ -122,13 +122,13 @@ fn delete(item: &PathBuf, args: &Cli) -> String {
         }
     };
 
-    dbg!(&tmp_error);
-    
-
     if let Some(err) = tmp_error {
         match err.kind() {
             ErrorKind::PermissionDenied => {
                 errors.push_str(&format!("rm: cannot remove '{}': Permission denied", item.to_string_lossy()));
+            }
+            ErrorKind::DirectoryNotEmpty => {
+                errors.push_str(&format!("rm: cannot remove '{}': Directory not empty", item.to_string_lossy()));
             }
             _ => {
                 errors.push_str(&format!("rm: cannot remove '{}'", item.to_string_lossy()));
@@ -186,7 +186,6 @@ fn main() {
             Err(_) => {
                 if !args.force {
                     println!("rm: cannot access '{}': No such file or directory", item.to_string_lossy());
-                    process::exit(1);
                 }
                 continue;
             }
@@ -204,9 +203,13 @@ fn main() {
                     errors = delete(item, &args);
                 }
             }
+        } else {
+            errors = delete(item, &args);
         }
 
-        print!("{errors}  ");
+        if errors.trim() != "" {
+            println!("{errors}");
+        }
 
         if args.progress {
             print!("\x1B[?25l"); // dont show cursor
