@@ -38,6 +38,6 @@ which rm
 ```
 and if it returns
 ```sh
-$USER/.local/bin/rm
+$HOME/.local/bin/rm
 ```
 then its worked and you're now using this rm command like an insane person
