@@ -146,7 +146,6 @@ fn main() {
 
     let mut paths: Vec<PathBuf> = Vec::new();
 
-
     let messages: Vec<String> = vec![
         String::from("Are you sure you want to delete these files? "),
         String::from("But are you really sure you want to? "),
@@ -154,6 +153,11 @@ fn main() {
         String::from("Youre a murderer if you delete these files "),
         String::from("How can you sleep at night knowing you delete innocent files who did nothing to you ")
     ];
+
+    if args.paths.len() < 1 {
+        println!("rm: missing operand\nTry 'rm --help' for more information.");
+        process::exit(1);
+    }
 
     if args.are_you_sure {
         for (i, message) in messages.iter().enumerate() {
@@ -168,11 +172,6 @@ fn main() {
                 process::exit(0);
             }
         }
-    }
-
-    if args.paths.len() < 1 {
-        println!("rm: missing operand\nTry 'rm --help' for more information.");
-        process::exit(1);
     }
 
     // this loop is to get the number of items we're dealing with for the progress bar
