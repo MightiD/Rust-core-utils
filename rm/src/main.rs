@@ -7,20 +7,21 @@ use rand::{Rng};
 use clap::{Parser};
 
 #[derive(Parser, Debug)]
+#[command(name = "rm", about = "removes specified files or directories", author = "MightiD")]
 struct Cli {
-    #[arg(short = 'r')]
+    #[arg(short = 'r', help = "recursively removes files in a specified directory")]
     recursive: bool,
 
-    #[arg(short = 'p')]
+    #[arg(short = 'p', help = "shows a progress bar for all the files that are being deleted")]
     progress: bool,
 
-    #[arg(short = 'f')]
+    #[arg(short = 'f', help = "forces the program to ignore most warnings and delete files")]
     force: bool,
 
-    #[arg(short = 'z')]
+    #[arg(short = 'z', help = "guilt trips you into not deleting the files")]
     are_you_sure: bool,
 
-    #[arg(short = 'j')]
+    #[arg(short = 'j', help = "random chance of files not being deleted")]
     jesus_take_the_wheel: bool,
 
     #[arg()]
