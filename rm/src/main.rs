@@ -1,3 +1,4 @@
+use std::fmt::format;
 use std::fs;
 use std::path::PathBuf;
 use std::process;
@@ -18,6 +19,17 @@ struct Cli {
 
     #[arg()]
     paths: Vec<String>,
+}
+
+fn input(message: String) -> String {
+    print!("{message}");
+    io::stdout().flush().unwrap();
+    let mut prompt = String::new();
+    io::stdin()
+        .read_line(&mut prompt)
+        .expect("Failed to read user input");
+    let prompt = prompt.trim().to_lowercase();
+    prompt
 }
 
 fn progress_bar(current: usize, length: usize) -> String {
@@ -147,13 +159,7 @@ fn main() {
                 } 
                 else {
                     //read user input for 'y' or 'yes' if write protected file
-                    print!("rm: remove write-protected file '{}'? ", item.to_string_lossy());
-                    io::stdout().flush().unwrap();
-                    let mut prompt = String::new();
-                    io::stdin()
-                        .read_line(&mut prompt)
-                        .expect("Failed to read user input");
-                    let prompt = prompt.trim().to_lowercase();
+                    let prompt = input(format!("rm: remove write-protected directory '{}'? ", item.to_string_lossy()));
 
                     if prompt == "y" || prompt == "yes" {
                         if !args.force {
