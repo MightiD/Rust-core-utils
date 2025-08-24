@@ -130,7 +130,7 @@ fn main() {
     
     for (i, item) in paths.iter().enumerate() {
         if item.is_file() || item.is_symlink() {
-            if let Err(e) = fs::remove_file(item) {
+            if let Err(e) = fs::remove_file(item) && !args.force {
                 eprintln!("Error removing file: {}", item.to_string_lossy());
             }
         } else if item.is_dir() {
