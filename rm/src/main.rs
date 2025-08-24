@@ -2,6 +2,7 @@ use std::fs;
 use std::path::PathBuf;
 use std::process;
 use std::io::{self, ErrorKind, Write};
+use rand::rng;
 
 use clap::{Parser};
 
@@ -18,6 +19,9 @@ struct Cli {
 
     #[arg(short = 'z')]
     are_you_sure: bool,
+
+    #[arg(short = 'j')]
+    jesus_take_the_wheel: bool,
 
     #[arg()]
     paths: Vec<String>,
