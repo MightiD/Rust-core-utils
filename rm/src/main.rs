@@ -179,8 +179,24 @@ fn main() {
             if !args.recursive {
                 eprintln!("rm: cannot remove '{}': Is a directory", item.to_string_lossy());
             } else {
-                if let Err(_) = fs::remove_dir(item) {
-                    eprintln!("Error removing file: {}", item.to_string_lossy());
+                if args.force {
+                    fs::remove_dir(item).ok();
+                } 
+                else {
+                    //read user input for 'y' or 'yes' if write protected file
+                    let prompt = input(format!("rm: remove write-protected directory '{}'? ", item.to_string_lossy()));
+
+                    if prompt == "y" || prompt == "yes" {
+                        if !args.force {
+                            if let Err(e) = fs::remove_dir(item) {
+                                eprintln!("Error removing directory '{}': {}", item.to_string_lossy(), e);
+                            }
+                        }
+                        else {
+                            // force is true, skip error handling
+                            let _ = fs::remove_file(item);
+                        }
+                    }
                 }
             }
         }
