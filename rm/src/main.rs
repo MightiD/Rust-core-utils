@@ -174,6 +174,13 @@ fn main() {
                     }
                 }
             }
+            else {
+                if args.force {
+                    fs::remove_file(item).ok();
+                } else {
+                    fs::remove_file(item).expect("Error removing file");
+                }
+            }
 
         } else if item.is_dir() {
             if !args.recursive {
@@ -194,7 +201,7 @@ fn main() {
                         }
                         else {
                             // force is true, skip error handling
-                            let _ = fs::remove_file(item);
+                            let _ = fs::remove_dir(item);
                         }
                     }
                 }
