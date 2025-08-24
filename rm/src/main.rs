@@ -102,7 +102,6 @@ fn main() {
             Ok(meta) => {
                 if meta.is_file() || meta.is_symlink() {
                     let item_path = PathBuf::from(item);
-                    dbg!(&item_path);
                     paths.push(item_path);
                 }
                 else if meta.is_dir() {
@@ -115,8 +114,10 @@ fn main() {
                 }
             }
             Err(_) => {
-                println!("rm: cannot access '{}': No such file or directory", item);
-                process::exit(1);
+                if !args.force {
+                    println!("rm: cannot access '{}': No such file or directory", item);
+                    process::exit(1);
+                }
             }
         }
     }
