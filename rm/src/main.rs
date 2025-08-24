@@ -13,6 +13,9 @@ struct Cli {
     #[arg(short = 'p')]
     progress: bool,
 
+    #[arg(short = 'f')]
+    force: bool,
+
     #[arg()]
     paths: Vec<String>,
 }
