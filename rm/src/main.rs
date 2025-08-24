@@ -129,10 +129,21 @@ fn main() {
     print!("\x1B[?25l"); // dont show cursor
     
     for (i, item) in paths.iter().enumerate() {
+        let meta = match fs::metadata(item) {
+            Ok(m) => m,
+            Err(_) => {
+                if !args.force {
+                    println!("rm: cannot access '{}': No such file or directory", item.to_string_lossy());
+                    process::exit(1);
+                }
+                continue;
+            }
+        };
         if item.is_file() || item.is_symlink() {
             if let Err(e) = fs::remove_file(item) && !args.force {
                 eprintln!("Error removing file: {}", item.to_string_lossy());
             }
+
         } else if item.is_dir() {
             if !args.recursive {
                 eprintln!("rm: cannot remove '{}': Is a directory", item.to_string_lossy());
