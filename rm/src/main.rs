@@ -108,7 +108,7 @@ fn main() {
                 continue;
             }
         };
-        
+
         if meta.is_file() || meta.is_symlink() {
             let item_path = PathBuf::from(item);
             paths.push(item_path);
@@ -127,10 +127,9 @@ fn main() {
     paths.sort();
     paths.reverse();
     
-    print!("\x1B[?25l"); // dont show cursor
     
     for (i, item) in paths.iter().enumerate() {
-        let meta = match fs::metadata(item) {
+        let perms = match fs::metadata(item) {
             Ok(m) => m,
             Err(_) => {
                 if !args.force {
@@ -139,10 +138,35 @@ fn main() {
                 }
                 continue;
             }
-        };
+        }.permissions();
+
         if item.is_file() || item.is_symlink() {
-            if let Err(e) = fs::remove_file(item) && !args.force {
-                eprintln!("Error removing file: {}", item.to_string_lossy());
+            if perms.readonly() {
+                if args.force {
+                    fs::remove_file(item).ok();
+                } 
+                else {
+                    //read user input for 'y' or 'yes' if write protected file
+                    print!("rm: remove write-protected file '{}'? ", item.to_string_lossy());
+                    io::stdout().flush().unwrap();
+                    let mut prompt = String::new();
+                    io::stdin()
+                        .read_line(&mut prompt)
+                        .expect("Failed to read user input");
+                    let prompt = prompt.trim().to_lowercase();
+
+                    if prompt == "y" || prompt == "yes" {
+                        if !args.force {
+                            if let Err(e) = fs::remove_file(item) {
+                                eprintln!("Error removing file '{}': {}", item.to_string_lossy(), e);
+                            }
+                        }
+                        else {
+                            // force is true, skip error handling
+                            let _ = fs::remove_file(item);
+                        }
+                    }
+                }
             }
 
         } else if item.is_dir() {
@@ -156,6 +180,7 @@ fn main() {
         }
 
         if args.progress {
+            print!("\x1B[?25l"); // dont show cursor
             let bar = progress_bar(i + 1, paths.len());
             print!("{}\r", bar);
             io::stdout().flush().unwrap();
