@@ -1,8 +1,7 @@
-use std::fmt::format;
 use std::fs;
 use std::path::PathBuf;
 use std::process;
-use std::io::{self, Write};
+use std::io::{self, ErrorKind, Write};
 
 use clap::Parser;
 
@@ -101,34 +100,38 @@ fn get_items_in_dir(path: &str, search_sub_dirs: bool, path_array: &mut Vec<Path
 fn delete(item: &PathBuf, args: &Cli) -> String {
     let mut errors = String::new();
 
-    //this branch handles regular files
-    if item.is_file() || item.is_symlink() {
-        if args.force {
-            //just try to remove no error checking
-            fs::remove_file(item).ok();
-        } else {
+    let tmp_error = {
+        //this branch handles regular files
+        if item.is_file() || item.is_symlink() {
             match fs::remove_file(item) {
-                Ok(_) => {}
-                Err(e) => {
-                    errors += &format!("rm: error deleting file '{}': {}", item.to_string_lossy(), e);
+                Ok(_) => None,
+                Err(e) => Some(e)
+            }
+
+        // handles dirs
+        } else {
+            if !args.recursive {
+                eprintln!("rm: cannot remove '{}': Is a directory", item.to_string_lossy());
+                None
+            } else {
+                match fs::remove_dir(item) {
+                    Ok(_) => None,
+                    Err(e) => Some(e)
                 }
             }
         }
-        
-    // handles dirs
-    } else {
-        if !args.recursive {
-            eprintln!("rm: cannot remove '{}': Is a directory", item.to_string_lossy());
-        } else {
-            if args.force {
-                fs::remove_dir(item).ok();
-            } else {
-                match fs::remove_dir(item) {
-                    Ok(_) => {}
-                    Err(e) => {
-                        errors += &format!("rm: error deleting directory '{}': {}", item.to_string_lossy(), e);
-                    }
-                }
+    };
+
+    dbg!(&tmp_error);
+    
+
+    if let Some(err) = tmp_error {
+        match err.kind() {
+            ErrorKind::PermissionDenied => {
+                errors.push_str(&format!("rm: cannot remove '{}': Permission denied", item.to_string_lossy()));
+            }
+            _ => {
+                errors.push_str(&format!("rm: cannot remove '{}'", item.to_string_lossy()));
             }
         }
     }
@@ -193,7 +196,7 @@ fn main() {
 
         if perms.readonly() {
             if args.force {
-                delete(item, &args);
+                errors = delete(item, &args);
             } else {
                 let prompt = input(format!("rm: remove write-protected directory '{}'? ", item.to_string_lossy()));
 
@@ -203,7 +206,7 @@ fn main() {
             }
         }
 
-        print!("{errors}\n");
+        print!("{errors}  ");
 
         if args.progress {
             print!("\x1B[?25l"); // dont show cursor
