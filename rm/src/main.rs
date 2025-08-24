@@ -125,13 +125,13 @@ fn delete(item: &PathBuf, args: &Cli) -> String {
     if let Some(err) = tmp_error {
         match err.kind() {
             ErrorKind::PermissionDenied => {
-                errors.push_str(&format!("rm: cannot remove '{}': Permission denied", item.to_string_lossy()));
+                errors.push_str("PermDenied");
             }
             ErrorKind::DirectoryNotEmpty => {
-                errors.push_str(&format!("rm: cannot remove '{}': Directory not empty", item.to_string_lossy()));
+                errors.push_str("DirNotEmpty");
             }
             _ => {
-                errors.push_str(&format!("rm: cannot remove '{}'", item.to_string_lossy()));
+                errors.push_str("MiscError");
             }
         }
     }
@@ -207,8 +207,18 @@ fn main() {
             errors = delete(item, &args);
         }
 
-        if errors.trim() != "" {
-            println!("{errors}");
+        match errors.as_str() {
+            "PermDenied" => {
+                eprintln!("rm: cannot remove '{}': Permission denied", item.to_string_lossy());
+            }
+            "DirNotEmpty" => {
+                eprintln!("rm: cannot remove '{}': Directory not empty", item.to_string_lossy());
+            }
+            _ => {
+                if !args.force {
+                    eprintln!("rm: cannot remove '{}': Error removing", item.to_string_lossy());
+                }
+            }
         }
 
         if args.progress {
