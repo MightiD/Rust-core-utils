@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use std::process;
 use std::io::{self, ErrorKind, Write};
 
-use clap::Parser;
+use clap::{Parser};
 
 #[derive(Parser, Debug)]
 struct Cli {
@@ -131,7 +131,7 @@ fn delete(item: &PathBuf, args: &Cli) -> String {
                 errors.push_str("DirNotEmpty");
             }
             _ => {
-                errors.push_str("MiscError");
+                errors = "".to_string();
             }
         }
     }
@@ -179,7 +179,6 @@ fn main() {
     paths.sort();
     paths.reverse();
     
-    
     for (i, item) in paths.iter().enumerate() {
         let perms = match fs::metadata(item) {
             Ok(m) => m,
@@ -214,11 +213,7 @@ fn main() {
             "DirNotEmpty" => {
                 eprintln!("rm: cannot remove '{}': Directory not empty", item.to_string_lossy());
             }
-            _ => {
-                if !args.force {
-                    eprintln!("rm: cannot remove '{}': Error removing", item.to_string_lossy());
-                }
-            }
+            _ => {}
         }
 
         if args.progress {
@@ -229,5 +224,6 @@ fn main() {
         }
     }
 
-    print!("\x1B[?25h\n"); //show cursor again
+    if args.progress {print!("\x1B[?25h\n");} //show cursor again
+    
 }
