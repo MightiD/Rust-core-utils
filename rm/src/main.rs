@@ -55,7 +55,7 @@ fn progress_bar(current: usize, length: usize) -> String {
 
 }
 
-fn get_total_items(path: &str, search_sub_dirs: bool, path_array: &mut Vec<PathBuf>) {
+fn get_items_in_dir(path: &str, search_sub_dirs: bool, path_array: &mut Vec<PathBuf>) {
     if let Ok(entries) = fs::read_dir(path) {
         for entry in entries {
             match entry {
@@ -64,7 +64,7 @@ fn get_total_items(path: &str, search_sub_dirs: bool, path_array: &mut Vec<PathB
                         if search_sub_dirs {
                             match entry.path().to_str() {
                                 Some(path) => {
-                                    get_total_items(path, true, path_array)
+                                    get_items_in_dir(path, true, path_array)
                                 }
                                 None => {
                                     eprintln!("There was an error converting a dir into a string");
@@ -107,7 +107,7 @@ fn main() {
                 else if meta.is_dir() {
                     //if -r, go over all sub paths
                     if args.recursive {
-                        get_total_items(item, args.recursive, &mut paths);
+                        get_items_in_dir(item, args.recursive, &mut paths);
                     }
                     let item_path = PathBuf::from(item);
                     paths.push(item_path);
