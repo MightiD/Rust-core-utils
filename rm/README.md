@@ -16,3 +16,28 @@ All the other flags (`-d`, `-i`, `-I`, `--one-file-system`, `--no-preserve-root`
 And at this point probably wont be because I never use them and dont need them
 
 I havent tested this yet but I think it could delete your `/` root folder since I haven't put any protections in place, unless the rust `std::fs` puts in protections of its own
+
+
+# How to build
+
+```sh
+git clone http://github.com/mightid/rust-core-utils.git
+cd rust-core-utils
+cd rm
+
+cargo build --release
+
+cp ./target/release/rm ~/.local/bin
+```
+
+Make sure you have `$HOME/.local/bin` **BEFORE** `/usr/bin` in your path otherwise it will use the `rm` command that comes packaged with your distribution
+
+You can verify if its using this rm command if you type 
+```sh
+which rm
+```
+and if it returns
+```sh
+$USER/.local/bin/rm
+```
+then its worked and you're now using this rm command like an insane person
