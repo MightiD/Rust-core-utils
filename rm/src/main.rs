@@ -98,6 +98,43 @@ fn get_items_in_dir(path: &str, search_sub_dirs: bool, path_array: &mut Vec<Path
     }
 }
 
+fn delete(item: &PathBuf, args: &Cli) -> String {
+    let mut errors = String::new();
+
+    //this branch handles regular files
+    if item.is_file() || item.is_symlink() {
+        if args.force {
+            //just try to remove no error checking
+            fs::remove_file(item).ok();
+        } else {
+            match fs::remove_file(item) {
+                Ok(_) => {}
+                Err(e) => {
+                    errors += &format!("rm: error deleting file '{}': {}", item.to_string_lossy(), e);
+                }
+            }
+        }
+        
+    // handles dirs
+    } else {
+        if !args.recursive {
+            eprintln!("rm: cannot remove '{}': Is a directory", item.to_string_lossy());
+        } else {
+            if args.force {
+                fs::remove_dir(item).ok();
+            } else {
+                match fs::remove_dir(item) {
+                    Ok(_) => {}
+                    Err(e) => {
+                        errors += &format!("rm: error deleting directory '{}': {}", item.to_string_lossy(), e);
+                    }
+                }
+            }
+        }
+    }
+
+    errors
+}
 fn main() {
     let args = Cli::parse();
 
@@ -152,61 +189,21 @@ fn main() {
             }
         }.permissions();
 
-        if item.is_file() || item.is_symlink() {
-            if perms.readonly() {
-                if args.force {
-                    fs::remove_file(item).ok();
-                } 
-                else {
-                    //read user input for 'y' or 'yes' if write protected file
-                    let prompt = input(format!("rm: remove write-protected directory '{}'? ", item.to_string_lossy()));
+        let mut errors = String::new();
 
-                    if prompt == "y" || prompt == "yes" {
-                        if !args.force {
-                            if let Err(e) = fs::remove_file(item) {
-                                eprintln!("Error removing file '{}': {}", item.to_string_lossy(), e);
-                            }
-                        }
-                        else {
-                            // force is true, skip error handling
-                            let _ = fs::remove_file(item);
-                        }
-                    }
-                }
-            }
-            else {
-                if args.force {
-                    fs::remove_file(item).ok();
-                } else {
-                    fs::remove_file(item).expect("Error removing file");
-                }
-            }
-
-        } else if item.is_dir() {
-            if !args.recursive {
-                eprintln!("rm: cannot remove '{}': Is a directory", item.to_string_lossy());
+        if perms.readonly() {
+            if args.force {
+                delete(item, &args);
             } else {
-                if args.force {
-                    fs::remove_dir(item).ok();
-                } 
-                else {
-                    //read user input for 'y' or 'yes' if write protected file
-                    let prompt = input(format!("rm: remove write-protected directory '{}'? ", item.to_string_lossy()));
+                let prompt = input(format!("rm: remove write-protected directory '{}'? ", item.to_string_lossy()));
 
-                    if prompt == "y" || prompt == "yes" {
-                        if !args.force {
-                            if let Err(e) = fs::remove_dir(item) {
-                                eprintln!("Error removing directory '{}': {}", item.to_string_lossy(), e);
-                            }
-                        }
-                        else {
-                            // force is true, skip error handling
-                            let _ = fs::remove_dir(item);
-                        }
-                    }
+                if prompt == "y" || prompt == "yes" {
+                    errors = delete(item, &args);
                 }
             }
         }
+
+        print!("{errors}\n");
 
         if args.progress {
             print!("\x1B[?25l"); // dont show cursor
