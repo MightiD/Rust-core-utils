@@ -98,27 +98,28 @@ fn main() {
 
     // this loop is to get the number of items we're dealing with for the progress bar
     for item in args.paths.iter() {
-        match fs::metadata(item) {
-            Ok(meta) => {
-                if meta.is_file() || meta.is_symlink() {
-                    let item_path = PathBuf::from(item);
-                    paths.push(item_path);
-                }
-                else if meta.is_dir() {
-                    //if -r, go over all sub paths
-                    if args.recursive {
-                        get_items_in_dir(item, args.recursive, &mut paths);
-                    }
-                    let item_path = PathBuf::from(item);
-                    paths.push(item_path);
-                }
-            }
+        let meta = match fs::metadata(item) {
+            Ok(meta) => meta,
             Err(_) => {
                 if !args.force {
                     println!("rm: cannot access '{}': No such file or directory", item);
                     process::exit(1);
                 }
+                continue;
             }
+        };
+        
+        if meta.is_file() || meta.is_symlink() {
+            let item_path = PathBuf::from(item);
+            paths.push(item_path);
+        }
+        else if meta.is_dir() {
+            //if -r, go over all sub paths
+            if args.recursive {
+                get_items_in_dir(item, args.recursive, &mut paths);
+            }
+            let item_path = PathBuf::from(item);
+            paths.push(item_path);
         }
     }
 
