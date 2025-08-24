@@ -2,7 +2,7 @@ use std::fs;
 use std::path::PathBuf;
 use std::process;
 use std::io::{self, ErrorKind, Write};
-use rand::rng;
+use rand::{Rng};
 
 use clap::{Parser};
 
@@ -178,6 +178,20 @@ fn main() {
         }
     }
 
+    if args.jesus_take_the_wheel {
+        let mut rng = rand::rng();
+
+        let target = rng.random_range(0..7).to_string();
+        let input_number = input(String::from("1 in 6 chance to delete the files: "));
+
+        if input_number == target {
+            println!("Deleting files");
+        } else {
+            println!("Better luck next time");
+            process::exit(1);
+        }
+    }
+    
     // this loop is to get the number of items we're dealing with for the progress bar
     for item in args.paths.iter() {
         let meta = match fs::metadata(item) {
